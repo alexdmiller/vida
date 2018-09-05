@@ -122,7 +122,7 @@ void main()
     vec3 color = vec3(0.0);
     
     vec2 uv =  gl_FragCoord.xy / resolution.xy;
-    vec2 r = vec2(uv.x * outerRadius + innerRadius, innerRadius);
+    vec2 r = vec2(outerRadius, innerRadius);
 
     float b1 = b1; //(sin(uv.x * 20 + time / 3) + 1) / 2 * 0.4 + 0.01;
     float b2 = b2; //(sin(uv.y * 21 + time / 5) + 1) / 2 * 0.4 + 0.01;
