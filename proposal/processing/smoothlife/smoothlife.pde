@@ -29,7 +29,8 @@ void setup() {
   
   renderCanvas = createGraphics(int(simulationCanvas.width * renderScale), int(simulationCanvas.height * renderScale), P2D);
   renderShader = loadShader("led.glsl");
-  renderShader.set("pixelSize", float(simulationCanvas.width), float(simulationCanvas.height));
+  renderShader.set("resolution", float(renderCanvas.width), float(renderCanvas.height));
+  renderShader.set("textureResolution", float(simulationCanvas.width), float(simulationCanvas.height));
   
   setupGUI();
 }
