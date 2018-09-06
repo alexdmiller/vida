@@ -15,6 +15,8 @@ uniform bool keyDown;
 uniform float outerRadius;
 uniform float innerRadius;
 
+uniform sampler2D noiseMap;
+
 //Conventions:
 // x component = outer radius / ring
 // y component = inner radius / disk
@@ -118,7 +120,6 @@ vec2 convolve(vec2 uv, vec2 r) {
 
 void main()
 {
-
     vec3 color = vec3(0.0);
     
     vec2 uv =  gl_FragCoord.xy / resolution.xy;
@@ -137,6 +138,8 @@ void main()
     vec2 normalized_convolution = convolve(uv.xy, r).xy / area;
     color.x = color.x + dt * (2.0 * transition_function(normalized_convolution, b1, b2) - 1.0);
     color.yz = normalized_convolution;
+
+    color += vec3(hash13(vec3(gl_FragCoord.xy, time)) - texture(ppixels, uv).x + 0.5) * texture(noiseMap, uv).x;
     color = clamp(color, 0.0, 1.0);
     
     // Set initial conditions. TODO: Move to function / cleanup
