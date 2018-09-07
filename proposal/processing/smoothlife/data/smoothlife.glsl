@@ -1,3 +1,4 @@
+#version 110
 
 #ifdef GL_ES
 precision highp float;
@@ -29,16 +30,27 @@ uniform sampler2D noiseMap;
 const float PI = 3.14159265;
 const float dt = 0.30;
 
-
-
 // SmoothLifeL rules
-uniform float b1 = 0.257;
-uniform float b2 = 0.336;
-uniform float d1 = 0.365;
-uniform float d2 = 0.549;
+uniform float b1;
+uniform float b2;
+uniform float d1;
+uniform float d2;
 
-uniform float alpha_n = 0.028;
-uniform float alpha_m = 0.147;
+uniform float alpha_n;
+uniform float alpha_m;
+
+// const vec2 r = vec2(10.0, 3.0);
+
+// // SmoothLifeL rules
+// const float b1 = 0.257;
+// const float b2 = 0.336;
+// const float d1 = 0.365;
+// const float d2 = 0.549;
+
+// const float alpha_n = 0.028;
+// const float alpha_m = 0.147;
+
+
 /*------------------------------*/
 
 //const float KEY_LEFT  = 37.5/256.0;
@@ -106,7 +118,7 @@ vec2 convolve(vec2 uv, vec2 r) {
             vec2 offset = d / resolution.xy;
             vec2 samplepos = wrap(uv + offset);
             //if(dist <= r.y + 1.0) {
-                float weight = texture(ppixels, samplepos).x;
+                float weight = texture2D(ppixels, samplepos).x;
               result.x += weight * ramp_step(r.y, dist) * (1.0-ramp_step(r.x, dist)); 
               
             //} else if(dist <= r.x + 1.) {
@@ -134,17 +146,16 @@ void main()
     /* -------------------------------------*/
     
     // TODO: Cleanup.
-    color = texture(ppixels, uv).xyz;
+    color = texture2D(ppixels, uv).xyz;
     vec2 normalized_convolution = convolve(uv.xy, r).xy / area;
     color.x = color.x + dt * (2.0 * transition_function(normalized_convolution, b1, b2) - 1.0);
     color.yz = normalized_convolution;
-
-    color += vec3(hash13(vec3(gl_FragCoord.xy, time)) - texture(ppixels, uv).x + 0.5) * texture(noiseMap, uv).x;
+    color.x += vec3(hash13(vec3(gl_FragCoord.xy, time)) - texture2D(ppixels, uv).x + 0.5).x * texture2D(noiseMap, uv).x;
     color = clamp(color, 0.0, 1.0);
     
     // Set initial conditions. TODO: Move to function / cleanup
-    if(time < 2 || keyDown) {
-        color = vec3(hash13(vec3(gl_FragCoord.xy, time)) - texture(ppixels, uv).x + 0.5);
+    if(time < 2.0 || keyDown) {
+        color = vec3(hash13(vec3(gl_FragCoord.xy, time)) - texture2D(ppixels, uv).x + 0.5);
     }
     
     if(mouseDown) {

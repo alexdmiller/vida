@@ -1,11 +1,15 @@
+#version 110
+
 #ifdef GL_ES
 precision mediump float;
 #endif
 
 uniform vec2 resolution;
-uniform float time;
+uniform float position;
 uniform float scale;
 uniform float amplitude;
+uniform float speed;
+uniform float pixelation;
 
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
 vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
@@ -84,7 +88,7 @@ void main() {
 
     // Scale the coordinate system to see
     // some noise in action
-    vec3 pos = vec3(st * scale, time/10.0);
+    vec3 pos = vec3(floor(st * scale * pixelation) / pixelation, position);
 
     // Use the noise function
     float n = snoise(pos) * amplitude;

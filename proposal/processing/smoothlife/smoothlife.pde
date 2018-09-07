@@ -1,3 +1,4 @@
+import codeanticode.syphon.*;
 import controlP5.*;
 
 ControlP5 cp5;
@@ -11,21 +12,21 @@ PGraphics simulationCanvas;
 PGraphics renderCanvas;
 
 // resolution of the actual simulation
-int simulationWidth = 610;
-int simulationHeight = 244;
+int simulationWidth = 1000;
+int simulationHeight = 300;
 
 // the number of pixels on the physical screen
-int screenPixelWidth = 610/2;
-int screenPixelHeight = 244/2;
+int screenPixelWidth = 1000;
+int screenPixelHeight = 300;
 
 // the size to render the screen at
-int renderWidth = 610 * 3;
-int renderHeight = 244 * 3;
+int renderWidth = screenPixelWidth * 2;
+int renderHeight = screenPixelHeight * 2;
 
 // Simulation parameters
 float outerRadius = 10;
 float innerRadius = 3;
-float birthMin = 0.257; 
+float birthMin = 0.257;
 float birthMax = 0.336;
 float deathMin = 0.365;
 float deathMax = 0.549;
@@ -34,12 +35,20 @@ float alphaM = 0.147;
 
 float noiseAmplitude = 0;
 float noiseScale = 4;
+float noiseSpeed = 0.01f;
+float noisePixelation = 100;
+float noisePosition = 0;
 
 boolean record = false;
 
-void setup() {
+SyphonServer server;
+
+void settings() {
   fullScreen(P2D);
-  
+  PJOGL.profile=1;
+}
+
+void setup() {
   simulationCanvas = createGraphics(simulationWidth, simulationHeight, P2D);
   simulationShader = loadShader("smoothlife.glsl");
   
@@ -52,17 +61,28 @@ void setup() {
   renderShader.set("renderResolution", float(renderWidth), float(renderHeight));
   
   setupGUI();
+  server = new SyphonServer(this, "Processing Syphon");
 }
 
-void draw() {  
+void draw() {
+  noisePosition += noiseSpeed;
   background(0);
   
   noiseShader.set("time", millis()/1000.0);
   noiseShader.set("scale", noiseScale);
   noiseShader.set("amplitude", noiseAmplitude);
+  noiseShader.set("position", noisePosition);
+  noiseShader.set("pixelation", noisePixelation);
+  
   noiseCanvas.beginDraw();
+  noiseCanvas.background(0);
+
   noiseCanvas.shader(noiseShader);
   noiseCanvas.rect(0, 0, simulationWidth, simulationHeight);
+  noiseCanvas.resetShader();
+
+  noiseCanvas.fill(100);
+  //noiseCanvas.ellipse(frameCount % (simulationWidth + 200) - 100, simulationHeight / 2, 100, 300);
   noiseCanvas.endDraw();
   
   simulationShader.set("time", millis()/1000.0);
@@ -88,9 +108,19 @@ void draw() {
   renderCanvas.image(simulationCanvas, 0, 0, renderWidth, renderHeight);
   renderCanvas.endDraw();
 
-  image(renderCanvas, 0, 400);
-  image(noiseCanvas, 1300, 0);
-  image(simulationCanvas, 700, 0);
+  image(renderCanvas, 40, 400);
+  noFill();
+  stroke(255);
+  rect(40, 400, renderCanvas.width, renderCanvas.height);
+  
+  image(noiseCanvas, 1300, 40);
+  stroke(255);
+  rect(1300, 40, noiseCanvas.width, noiseCanvas.height);
+
+  image(simulationCanvas, 650, 40);
+  stroke(255);
+  rect(650, 40, simulationCanvas.width, simulationCanvas.height);
+
   
   fill(255);
   text(frameRate, 20, height - 20);
@@ -98,11 +128,13 @@ void draw() {
   if (record) {
     renderCanvas.save("panel" + nf(frameCount, 4) +".png");
   }
+    
+  server.sendImage(renderCanvas);
 }
 
 void keyPressed() {
   if (key == 's') {
-    record = !record;
+    renderCanvas.save("panel" + nf(frameCount, 4) +".png");
   }
 }
 
@@ -147,6 +179,22 @@ void setupGUI() {
       .setPosition(20, 180)
       .setRange(0, 20)
       .setValue(4)
+      .setBroadcast(true);
+      
+  cp5.addSlider("noiseSpeed")
+      .setSize(500, 30)
+      .setBroadcast(false)
+      .setPosition(20, 220)
+      .setRange(0, 0.1)
+      .setValue(4)
+      .setBroadcast(true);
+
+  cp5.addSlider("noisePixelation")
+      .setSize(500, 30)
+      .setBroadcast(false)
+      .setPosition(20, 260)
+      .setRange(0, 100)
+      .setValue(100)
       .setBroadcast(true);
 
   cp5.end();

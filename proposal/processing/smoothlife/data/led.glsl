@@ -1,8 +1,10 @@
+#version 110
+
 #ifdef GL_ES
 precision mediump float;
 precision mediump int;
 #endif
- 
+
 uniform sampler2D texture;
 uniform vec2 screenResolution;
 uniform vec2 renderResolution;
@@ -10,11 +12,11 @@ uniform vec2 renderResolution;
 varying vec4 vertColor;
 varying vec4 vertTexCoord;
  
-const vec4 mainColor = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 secondaryColor = vec4(0.0, 0.0, 1.0, 1.0);
-const vec4 tertiaryColor = vec4(1.0, 0, 0, 1.0);
+const vec4 mainColor = vec4(0.0, 1.0, 1.0, 1.0);
+const vec4 secondaryColor = vec4(0.5, 0.1, 0.0, 1.0);
+const vec4 tertiaryColor = vec4(0.5, 0, 0.5, 1.0);
 
-const float pixelBorder = 1;
+const float pixelBorder = 0.0;
 
 float sigmoid(float x, float startX, float endX) {
   if (x <= startX) return 0.0;
